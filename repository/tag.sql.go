@@ -37,6 +37,23 @@ func (q *Queries) DeleteTag(ctx context.Context, id int64) error {
 	return err
 }
 
+const getTag = `-- name: GetTag :one
+SELECT id, name, updated_at, created_at FROM tag
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetTag(ctx context.Context, id int64) (Tag, error) {
+	row := q.queryRow(ctx, q.getTagStmt, getTag, id)
+	var i Tag
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const listTag = `-- name: ListTag :many
 SELECT id, name, updated_at, created_at FROM tag
 ORDER BY id

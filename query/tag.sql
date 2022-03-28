@@ -21,3 +21,7 @@ RETURNING *;
 -- name: DeleteTag :exec
 DELETE FROM tag
 WHERE id = $1;
+
+-- name: GetTag :one
+SELECT * FROM tag
+WHERE id = $1 LIMIT 1;

@@ -15,6 +15,7 @@ type Querier interface {
 	DeleteEntries(ctx context.Context, id int64) error
 	DeleteTag(ctx context.Context, id int64) error
 	GetEntries(ctx context.Context, id int64) (Entry, error)
+	GetTag(ctx context.Context, id int64) (Tag, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	ListContact(ctx context.Context, arg ListContactParams) ([]Contact, error)
 	ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error)
