@@ -11,33 +11,25 @@ import (
 const createContact = `-- name: CreateContact :one
 INSERT INTO contact (
    owner,
-   email,
    github,
    twitter
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING id, owner, email, github, twitter, updated_at, created_at
+    $1, $2, $3
+) RETURNING id, owner, github, twitter, updated_at, created_at
 `
 
 type CreateContactParams struct {
 	Owner   string         `json:"owner"`
-	Email   sql.NullString `json:"email"`
 	Github  sql.NullString `json:"github"`
 	Twitter sql.NullString `json:"twitter"`
 }
 
 func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error) {
-	row := q.queryRow(ctx, q.createContactStmt, createContact,
-		arg.Owner,
-		arg.Email,
-		arg.Github,
-		arg.Twitter,
-	)
+	row := q.queryRow(ctx, q.createContactStmt, createContact, arg.Owner, arg.Github, arg.Twitter)
 	var i Contact
 	err := row.Scan(
 		&i.ID,
 		&i.Owner,
-		&i.Email,
 		&i.Github,
 		&i.Twitter,
 		&i.UpdatedAt,
@@ -56,60 +48,35 @@ func (q *Queries) DeleteContact(ctx context.Context, id int64) error {
 	return err
 }
 
-const listContact = `-- name: ListContact :many
-SELECT id, owner, email, github, twitter, updated_at, created_at FROM contact
-ORDER BY id
-LIMIT $1
-OFFSET $2
+const getContact = `-- name: GetContact :one
+SELECT id, owner, github, twitter, updated_at, created_at FROM contact
+WHERE id = $1 LIMIT 1
 `
 
-type ListContactParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) ListContact(ctx context.Context, arg ListContactParams) ([]Contact, error) {
-	rows, err := q.query(ctx, q.listContactStmt, listContact, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Contact{}
-	for rows.Next() {
-		var i Contact
-		if err := rows.Scan(
-			&i.ID,
-			&i.Owner,
-			&i.Email,
-			&i.Github,
-			&i.Twitter,
-			&i.UpdatedAt,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetContact(ctx context.Context, id int64) (Contact, error) {
+	row := q.queryRow(ctx, q.getContactStmt, getContact, id)
+	var i Contact
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Github,
+		&i.Twitter,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const updateContact = `-- name: UpdateContact :one
 UPDATE contact
-SET owner = $2, email = $3, github = $4, twitter = $5
+SET owner = $2, github = $3, twitter = $4
 WHERE id = $1
-RETURNING id, owner, email, github, twitter, updated_at, created_at
+RETURNING id, owner, github, twitter, updated_at, created_at
 `
 
 type UpdateContactParams struct {
 	ID      int64          `json:"id"`
 	Owner   string         `json:"owner"`
-	Email   sql.NullString `json:"email"`
 	Github  sql.NullString `json:"github"`
 	Twitter sql.NullString `json:"twitter"`
 }
@@ -118,7 +85,6 @@ func (q *Queries) UpdateContact(ctx context.Context, arg UpdateContactParams) (C
 	row := q.queryRow(ctx, q.updateContactStmt, updateContact,
 		arg.ID,
 		arg.Owner,
-		arg.Email,
 		arg.Github,
 		arg.Twitter,
 	)
@@ -126,7 +92,6 @@ func (q *Queries) UpdateContact(ctx context.Context, arg UpdateContactParams) (C
 	err := row.Scan(
 		&i.ID,
 		&i.Owner,
-		&i.Email,
 		&i.Github,
 		&i.Twitter,
 		&i.UpdatedAt,

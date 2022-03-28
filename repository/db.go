@@ -43,6 +43,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteTagStmt, err = db.PrepareContext(ctx, deleteTag); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteTag: %w", err)
 	}
+	if q.getContactStmt, err = db.PrepareContext(ctx, getContact); err != nil {
+		return nil, fmt.Errorf("error preparing query GetContact: %w", err)
+	}
 	if q.getEntriesStmt, err = db.PrepareContext(ctx, getEntries); err != nil {
 		return nil, fmt.Errorf("error preparing query GetEntries: %w", err)
 	}
@@ -51,9 +54,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getUserStmt, err = db.PrepareContext(ctx, getUser); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUser: %w", err)
-	}
-	if q.listContactStmt, err = db.PrepareContext(ctx, listContact); err != nil {
-		return nil, fmt.Errorf("error preparing query ListContact: %w", err)
 	}
 	if q.listEntriesStmt, err = db.PrepareContext(ctx, listEntries); err != nil {
 		return nil, fmt.Errorf("error preparing query ListEntries: %w", err)
@@ -110,6 +110,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteTagStmt: %w", cerr)
 		}
 	}
+	if q.getContactStmt != nil {
+		if cerr := q.getContactStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getContactStmt: %w", cerr)
+		}
+	}
 	if q.getEntriesStmt != nil {
 		if cerr := q.getEntriesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getEntriesStmt: %w", cerr)
@@ -123,11 +128,6 @@ func (q *Queries) Close() error {
 	if q.getUserStmt != nil {
 		if cerr := q.getUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserStmt: %w", cerr)
-		}
-	}
-	if q.listContactStmt != nil {
-		if cerr := q.listContactStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listContactStmt: %w", cerr)
 		}
 	}
 	if q.listEntriesStmt != nil {
@@ -201,10 +201,10 @@ type Queries struct {
 	deleteContactStmt *sql.Stmt
 	deleteEntriesStmt *sql.Stmt
 	deleteTagStmt     *sql.Stmt
+	getContactStmt    *sql.Stmt
 	getEntriesStmt    *sql.Stmt
 	getTagStmt        *sql.Stmt
 	getUserStmt       *sql.Stmt
-	listContactStmt   *sql.Stmt
 	listEntriesStmt   *sql.Stmt
 	listTagStmt       *sql.Stmt
 	updateContactStmt *sql.Stmt
@@ -223,10 +223,10 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteContactStmt: q.deleteContactStmt,
 		deleteEntriesStmt: q.deleteEntriesStmt,
 		deleteTagStmt:     q.deleteTagStmt,
+		getContactStmt:    q.getContactStmt,
 		getEntriesStmt:    q.getEntriesStmt,
 		getTagStmt:        q.getTagStmt,
 		getUserStmt:       q.getUserStmt,
-		listContactStmt:   q.listContactStmt,
 		listEntriesStmt:   q.listEntriesStmt,
 		listTagStmt:       q.listTagStmt,
 		updateContactStmt: q.updateContactStmt,

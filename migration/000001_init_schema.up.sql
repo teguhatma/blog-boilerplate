@@ -29,7 +29,6 @@ CREATE TABLE "entries" (
 CREATE TABLE "contact" (
   "id" bigserial PRIMARY KEY,
   "owner" varchar NOT NULL,
-  "email" varchar,
   "github" varchar,
   "twitter" varchar,
   "updated_at" timestamptz NOT NULL DEFAULT '0001-01-01 00:00:00Z',

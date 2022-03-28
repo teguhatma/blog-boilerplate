@@ -14,10 +14,10 @@ type Querier interface {
 	DeleteContact(ctx context.Context, id int64) error
 	DeleteEntries(ctx context.Context, id int64) error
 	DeleteTag(ctx context.Context, id int64) error
+	GetContact(ctx context.Context, id int64) (Contact, error)
 	GetEntries(ctx context.Context, id int64) (Entry, error)
 	GetTag(ctx context.Context, id int64) (Tag, error)
 	GetUser(ctx context.Context, username string) (User, error)
-	ListContact(ctx context.Context, arg ListContactParams) ([]Contact, error)
 	ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error)
 	ListTag(ctx context.Context, arg ListTagParams) ([]Tag, error)
 	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)

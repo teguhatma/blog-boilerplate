@@ -1,26 +1,22 @@
 -- name: CreateContact :one
 INSERT INTO contact (
    owner,
-   email,
    github,
    twitter
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3
 ) RETURNING *;
-
--- name: ListContact :many
-SELECT * FROM contact
-ORDER BY id
-LIMIT $1
-OFFSET $2;
-
 
 -- name: UpdateContact :one
 UPDATE contact
-SET owner = $2, email = $3, github = $4, twitter = $5
+SET owner = $2, github = $3, twitter = $4
 WHERE id = $1
 RETURNING *;
 
 -- name: DeleteContact :exec
 DELETE FROM contact
 WHERE id = $1;
+
+-- name: GetContact :one
+SELECT * FROM contact
+WHERE id = $1 LIMIT 1;

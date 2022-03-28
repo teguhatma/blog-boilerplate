@@ -10,7 +10,6 @@ import (
 type Contact struct {
 	ID        int64          `json:"id"`
 	Owner     string         `json:"owner"`
-	Email     sql.NullString `json:"email"`
 	Github    sql.NullString `json:"github"`
 	Twitter   sql.NullString `json:"twitter"`
 	UpdatedAt time.Time      `json:"updated_at"`
