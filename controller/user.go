@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/teguhatma/blog-boilerplate/cmd"
 	"github.com/teguhatma/blog-boilerplate/request"
+	shttp "github.com/teguhatma/blog-boilerplate/server/http"
 	"github.com/teguhatma/blog-boilerplate/service/user"
 )
 
@@ -16,40 +16,40 @@ type controller struct {
 }
 
 func (c *controller) RegisterRoutes(router *mux.Router) {
-	router.Handle("/api/v1/users/{username}", cmd.AppHandler(c.getUser)).Methods(http.MethodGet)
-	router.Handle("/api/v1/users", cmd.AppHandler(c.createUser)).Methods(http.MethodPost)
+	router.Handle("/api/v1/users/{username}", shttp.AppHandler(c.getUser)).Methods(http.MethodGet)
+	router.Handle("/api/v1/users", shttp.AppHandler(c.createUser)).Methods(http.MethodPost)
 }
 
-func (c *controller) getUser(r *http.Request) (*cmd.Response, error) {
+func (c *controller) getUser(r *http.Request) *shttp.Response {
 	username := mux.Vars(r)["username"]
 
 	res, err := c.service.GetUser(context.Background(), username)
 	if err != nil {
-		return nil, err
+		return errResponse(err)
 	}
 
-	return &cmd.Response{
+	return &shttp.Response{
 		Data:       res,
-		StatusCode: http.StatusCreated,
-	}, nil
+		StatusCode: http.StatusOK,
+	}
 }
 
-func (c *controller) createUser(r *http.Request) (*cmd.Response, error) {
+func (c *controller) createUser(r *http.Request) *shttp.Response {
 	var req request.UserRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return nil, err
+		return nil
 	}
 
 	user, err := c.service.CreateUser(context.Background(), req)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return &cmd.Response{
+	return &shttp.Response{
 		Data:       user,
 		StatusCode: http.StatusCreated,
-	}, nil
+	}
 }
 
 func NewUserController(router *mux.Router, service user.Service) *controller {

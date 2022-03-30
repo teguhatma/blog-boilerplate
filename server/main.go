@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/gorilla/mux"
-	"github.com/teguhatma/blog-boilerplate/cmd"
 	"github.com/teguhatma/blog-boilerplate/container"
+	"github.com/teguhatma/blog-boilerplate/server/http"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 		log.Fatal(ctx, "Error in initRoutes Error %v", err)
 	}
 
-	httpServer, err := cmd.InitServer(router)
+	httpServer, err := http.InitServer(router)
 	if err != nil {
 		log.Fatal(ctx, "Error while initialising server %s", err)
 	}

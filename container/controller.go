@@ -2,7 +2,7 @@ package container
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/teguhatma/blog-boilerplate/controller"
+	c "github.com/teguhatma/blog-boilerplate/controller"
 )
 
 func getUserController(router *mux.Router) error {
@@ -11,6 +11,6 @@ func getUserController(router *mux.Router) error {
 		return err
 	}
 
-	controller.NewUserController(router, service)
+	c.NewUserController(router, service)
 	return nil
 }

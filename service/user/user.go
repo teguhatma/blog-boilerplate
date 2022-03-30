@@ -3,11 +3,12 @@ package user
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"net/http"
 
 	"github.com/teguhatma/blog-boilerplate/repository"
 	"github.com/teguhatma/blog-boilerplate/request"
 	"github.com/teguhatma/blog-boilerplate/response"
+	r "github.com/teguhatma/blog-boilerplate/service"
 	"github.com/teguhatma/blog-boilerplate/utils"
 )
 
@@ -29,10 +30,10 @@ func NewService(repo repository.Querier) Service {
 func (service *service) GetUser(ctx context.Context, username string) (*response.UserResponse, error) {
 	user, err := service.repo.GetUser(ctx, username)
 	if err != nil {
-		if err != sql.ErrNoRows {
-			return nil, fmt.Errorf("user not found")
+		if err == sql.ErrNoRows {
+			return nil, r.NewWithCause(http.StatusNotFound, err, "Not Found")
 		}
-		return nil, err
+		return nil, r.NewWithCause(http.StatusInternalServerError, err, "Internal Error")
 	}
 
 	res := mapToResponse(user)

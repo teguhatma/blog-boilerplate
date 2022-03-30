@@ -1,4 +1,4 @@
-package cmd
+package http
 
 import (
 	"context"
@@ -13,6 +13,26 @@ import (
 
 	"github.com/gorilla/mux"
 )
+
+type serverOptions struct {
+	methodNotAllowedHandler http.Handler
+	notFoundHandler         http.Handler
+	serverStopTimeout       int
+}
+
+type Option func(*serverOptions) error
+
+type Server struct {
+	server  *http.Server
+	options *serverOptions
+	exit    chan os.Signal
+}
+
+type Config struct {
+	Name    string
+	Port    int
+	Version string
+}
 
 type ContentType string
 
@@ -33,28 +53,28 @@ type Response struct {
 	Headers    HTTPHeaders
 }
 
+type ErrorResponse struct {
+	Error      interface{}
+	StatusCode int
+	Headers    HTTPHeaders
+}
+
 type httpResponse struct {
 	Data interface{} `json:"data"`
 }
 
-type serverOptions struct {
-	methodNotAllowedHandler http.Handler
-	notFoundHandler         http.Handler
-	serverStopTimeout       int
+func NewHeaders() HTTPHeaders {
+	return make(map[string]string)
 }
 
-type Option func(*serverOptions) error
+func setHeaders(headers HTTPHeaders, w http.ResponseWriter) {
+	if _, ok := headers[ContentTypeKey]; !ok {
+		w.Header().Set(ContentTypeKey, string(ContentTypeJSON))
+	}
 
-type Server struct {
-	server  *http.Server
-	options *serverOptions
-	exit    chan os.Signal
-}
-
-type Config struct {
-	Name    string
-	Port    int
-	Version string
+	for key, val := range headers {
+		w.Header().Set(key, val)
+	}
 }
 
 func InitServer(router *mux.Router) (*Server, error) {
@@ -105,24 +125,24 @@ func (s *Server) Stop(ctx context.Context) {
 	s.exit <- os.Interrupt
 }
 
-func defaultMethodNotAllowedHandler(r *http.Request) (*Response, error) {
+func defaultMethodNotAllowedHandler(r *http.Request) *Response {
 	headers := NewHeaders()
 
 	return &Response{
 		Data:       fmt.Sprintf("%v Method not allowed", r.Method),
 		StatusCode: http.StatusMethodNotAllowed,
 		Headers:    headers,
-	}, nil
+	}
 }
 
-func defaultNotFoundHandler(r *http.Request) (*Response, error) {
+func defaultNotFoundHandler(r *http.Request) *Response {
 	headers := NewHeaders()
 
 	return &Response{
 		Data:       "Url not found",
 		StatusCode: http.StatusNotFound,
 		Headers:    headers,
-	}, nil
+	}
 }
 
 func NewHTTPServer(config *Config, router *mux.Router, opts ...Option) (*Server, error) {
@@ -172,18 +192,10 @@ func NewHTTPServer(config *Config, router *mux.Router, opts ...Option) (*Server,
 	}, nil
 }
 
-func NewHeaders() HTTPHeaders {
-	return make(map[string]string)
-}
-
-type AppHandler func(*http.Request) (*Response, error)
+type AppHandler func(*http.Request) *Response
 
 func (fn AppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	res, err := fn(r)
-
-	if err != nil {
-		return
-	}
+	res := fn(r)
 
 	setHeaders(res.Headers, w)
 	w.WriteHeader(res.StatusCode)
@@ -199,15 +211,5 @@ func (fn AppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := w.Write(response); err != nil {
 		return
-	}
-}
-
-func setHeaders(headers HTTPHeaders, w http.ResponseWriter) {
-	if _, ok := headers[ContentTypeKey]; !ok {
-		w.Header().Set(ContentTypeKey, string(ContentTypeJSON))
-	}
-
-	for key, val := range headers {
-		w.Header().Set(key, val)
 	}
 }
