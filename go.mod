@@ -3,7 +3,6 @@ module github.com/teguhatma/blog-boilerplate
 go 1.18
 
 require (
-	github.com/bmizerany/pq v0.0.0-20131128184720-da2b95e392c1
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.4
 	github.com/stretchr/testify v1.7.1
