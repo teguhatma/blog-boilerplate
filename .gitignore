@@ -19,3 +19,7 @@
 
 # vscode
 .vscode
+
+# for http request
+*.http
+*.res

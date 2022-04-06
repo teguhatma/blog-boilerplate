@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 
-	_ "github.com/bmizerany/pq"
+	_ "github.com/lib/pq"
 )
 
 var dbS *sql.DB

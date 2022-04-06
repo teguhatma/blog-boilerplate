@@ -1,10 +1,11 @@
-package service
+package errors
 
 type Code int
 
 type FError interface {
 	error
 	Code() Code
+	Cause() error
 }
 
 type baseError struct {
@@ -19,6 +20,10 @@ func (b baseError) Code() Code {
 
 func (b baseError) Error() string {
 	return b.message
+}
+
+func (b baseError) Cause() error {
+	return b.cause
 }
 
 func NewWithCause(code Code, cause error, message string) FError {

@@ -20,36 +20,36 @@ func (c *controller) RegisterRoutes(router *mux.Router) {
 	router.Handle("/api/v1/users", shttp.AppHandler(c.createUser)).Methods(http.MethodPost)
 }
 
-func (c *controller) getUser(r *http.Request) *shttp.Response {
+func (c *controller) getUser(r *http.Request) (*shttp.Response, *shttp.ErrorResponse) {
 	username := mux.Vars(r)["username"]
 
 	res, err := c.service.GetUser(context.Background(), username)
 	if err != nil {
-		return errResponse(err)
+		return nil, errResponse(err)
 	}
 
 	return &shttp.Response{
 		Data:       res,
 		StatusCode: http.StatusOK,
-	}
+	}, nil
 }
 
-func (c *controller) createUser(r *http.Request) *shttp.Response {
+func (c *controller) createUser(r *http.Request) (*shttp.Response, *shttp.ErrorResponse) {
 	var req request.UserRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return nil
+		return nil, errResponse(err)
 	}
 
 	user, err := c.service.CreateUser(context.Background(), req)
 	if err != nil {
-		return nil
+		return nil, errResponse(err)
 	}
 
 	return &shttp.Response{
 		Data:       user,
 		StatusCode: http.StatusCreated,
-	}
+	}, nil
 }
 
 func NewUserController(router *mux.Router, service user.Service) *controller {
