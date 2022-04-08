@@ -3,8 +3,8 @@ package user
 import (
 	"context"
 	"database/sql"
-	"net/http"
 
+	fe "github.com/teguhatma/blog-boilerplate/errors"
 	r "github.com/teguhatma/blog-boilerplate/errors"
 	"github.com/teguhatma/blog-boilerplate/repository"
 	"github.com/teguhatma/blog-boilerplate/request"
@@ -31,9 +31,9 @@ func (service *service) GetUser(ctx context.Context, username string) (*response
 	user, err := service.repo.GetUser(ctx, username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, r.NewWithCause(http.StatusNotFound, err, "Not Found")
+			return nil, r.NewWithCause(fe.NOT_FOUND, err, "User Not Found")
 		}
-		return nil, r.NewWithCause(http.StatusInternalServerError, err, "Get User")
+		return nil, r.NewWithCause(fe.INTERNAL_ERROR, err, "Get User")
 	}
 
 	res := mapToResponse(user)
@@ -43,12 +43,12 @@ func (service *service) GetUser(ctx context.Context, username string) (*response
 func (service *service) CreateUser(ctx context.Context, request request.UserRequest) (*response.UserResponse, error) {
 	req, err := mapToRepository(request)
 	if err != nil {
-		return nil, r.NewWithCause(http.StatusBadRequest, err, "Map Request to Domain")
+		return nil, r.NewWithCause(fe.BAD_MESSAGE, err, "Map Request to Domain")
 	}
 
 	user, err := service.repo.CreateUser(ctx, *req)
 	if err != nil {
-		return nil, r.NewWithCause(http.StatusInternalServerError, err, "Create User")
+		return nil, r.NewWithCause(fe.INTERNAL_ERROR, err, "Create User")
 	}
 
 	res := mapToResponse(user)

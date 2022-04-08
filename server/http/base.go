@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	fe "github.com/teguhatma/blog-boilerplate/errors"
 )
 
 type serverOptions struct {
@@ -39,6 +40,8 @@ type ContentType string
 const (
 	ContentTypeKey  = "content-type"
 	ContentTypeJSON = ContentType("application/json")
+	defaultMessage  = "Internal Server Error"
+	defaultCode     = ""
 )
 
 type HTTPHeaders map[string]string
@@ -53,18 +56,19 @@ type Response struct {
 	Headers    HTTPHeaders
 }
 
+// ErrorResponse - Struct for the error response
 type ErrorResponse struct {
-	Error      interface{}
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+type ResponseError struct {
 	StatusCode int
-	Headers    HTTPHeaders
+	fe.FError
 }
 
 type httpResponse struct {
 	Data interface{} `json:"data"`
-}
-
-type httpErrResponse struct {
-	Error interface{} `json:"error"`
 }
 
 func NewHeaders() HTTPHeaders {
@@ -84,7 +88,7 @@ func setHeaders(headers HTTPHeaders, w http.ResponseWriter) {
 func InitServer(router *mux.Router) (*Server, error) {
 	httpConfig := &Config{
 		Name:    "test",
-		Port:    8080,
+		Port:    8030,
 		Version: "v1",
 	}
 	server, err := NewHTTPServer(httpConfig, router)
@@ -129,7 +133,7 @@ func (s *Server) Stop(ctx context.Context) {
 	s.exit <- os.Interrupt
 }
 
-func defaultMethodNotAllowedHandler(r *http.Request) (*Response, *ErrorResponse) {
+func defaultMethodNotAllowedHandler(r *http.Request) (*Response, error) {
 	headers := NewHeaders()
 
 	return &Response{
@@ -139,7 +143,7 @@ func defaultMethodNotAllowedHandler(r *http.Request) (*Response, *ErrorResponse)
 	}, nil
 }
 
-func defaultNotFoundHandler(r *http.Request) (*Response, *ErrorResponse) {
+func defaultNotFoundHandler(r *http.Request) (*Response, error) {
 	headers := NewHeaders()
 
 	return &Response{
@@ -196,27 +200,19 @@ func NewHTTPServer(config *Config, router *mux.Router, opts ...Option) (*Server,
 	}, nil
 }
 
-type AppHandler func(*http.Request) (*Response, *ErrorResponse)
+type AppHandler func(*http.Request) (*Response, error)
 
 func (fn AppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	res, errRes := fn(r)
-	if errRes != nil {
-		setHeaders(errRes.Headers, w)
-		w.WriteHeader(errRes.StatusCode)
+	res, err := fn(r)
 
-		response, err := json.Marshal(
-			httpErrResponse{
-				Error: errRes.Error,
-			},
-		)
-		if err != nil {
-			return
+	if err != nil {
+		errResponse := writeErrorResponse(err, w)
+
+		if _, err := w.Write(errResponse); err != nil {
+			fmt.Sprintf("http response writing failde: %v", err)
 		}
 
-		if _, err := w.Write(response); err != nil {
-			return
-		}
-
+		fmt.Sprintf("error is returned %v", err)
 		return
 	}
 
@@ -235,4 +231,42 @@ func (fn AppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if _, err := w.Write(response); err != nil {
 		return
 	}
+}
+
+func IsValidStatusCode(statusCode int) bool {
+	return http.StatusText(statusCode) != ""
+}
+
+func writeErrorResponse(err error, w http.ResponseWriter) []byte {
+	w.Header().Set(ContentTypeKey, string(ContentTypeJSON))
+
+	switch e := err.(type) {
+	case ResponseError: // This for http or sync way
+		if IsValidStatusCode(e.StatusCode) {
+			w.WriteHeader(e.StatusCode)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return marshalErrorResponse(e.Error(), string(e.Code()))
+	case fe.FError: // This for async way or kafka
+		w.WriteHeader(http.StatusInternalServerError)
+		return marshalErrorResponse(e.Error(), string(e.Code()))
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		return marshalErrorResponse(defaultMessage, defaultCode)
+	}
+}
+
+func marshalErrorResponse(message, code string) []byte {
+	errResponse := ErrorResponse{
+		Message: message,
+		Code:    code,
+	}
+
+	response, err := json.Marshal(errResponse)
+	if err != nil {
+		return []byte(http.StatusText(http.StatusInternalServerError))
+	}
+
+	return response
 }

@@ -1,10 +1,11 @@
 package errors
 
-type Code int
+type Code string
 
 type FError interface {
 	error
 	Code() Code
+	Message() string
 	Cause() error
 }
 
@@ -14,12 +15,22 @@ type baseError struct {
 	message string
 }
 
-func (b baseError) Code() Code {
-	return b.code
+func (b baseError) Error() string {
+	str := ""
+
+	if b.code != "" {
+		str += string(b.message)
+	}
+
+	return str
 }
 
-func (b baseError) Error() string {
+func (b baseError) Message() string {
 	return b.message
+}
+
+func (b baseError) Code() Code {
+	return b.code
 }
 
 func (b baseError) Cause() error {

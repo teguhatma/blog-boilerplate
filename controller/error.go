@@ -3,36 +3,27 @@ package controller
 import (
 	"net/http"
 
-	"github.com/lib/pq"
-	"github.com/teguhatma/blog-boilerplate/errors"
+	fe "github.com/teguhatma/blog-boilerplate/errors"
 	shttp "github.com/teguhatma/blog-boilerplate/server/http"
 )
 
-func errResponse(err error) *shttp.ErrorResponse {
-	if val, ok := err.(errors.FError); ok {
-		switch val.Code() {
-		case http.StatusInternalServerError:
-			return &shttp.ErrorResponse{
-				Error:      val.Cause().Error(),
-				StatusCode: int(val.Code()),
-			}
-		case http.StatusNotFound:
-			return &shttp.ErrorResponse{
-				Error:      val.Cause().Error(),
-				StatusCode: int(val.Code()),
-			}
-		}
+func NewResponseErrorWithCause(code fe.Code, err error, message string, statusCode int) error {
+	return shttp.ResponseError{
+		FError:     fe.NewWithCause(code, err, message),
+		StatusCode: statusCode,
 	}
+}
 
-	if val, ok := err.(*pq.Error); ok {
-		switch val.Code.Name() {
-		case "unique_violation":
-		case "foreign_key_violation":
-			return &shttp.ErrorResponse{
-				Error:      err,
-				StatusCode: http.StatusBadRequest,
-			}
+func errResponse(err error) error {
+	if v, ok := err.(fe.FError); ok {
+		switch v.Code() {
+		case "NOT_FOUND":
+			return NewResponseErrorWithCause(v.Code(), err, v.Message(), http.StatusNotFound)
+		case "BAD_MESSAGE":
+			return NewResponseErrorWithCause(v.Code(), err, v.Message(), http.StatusBadRequest)
+		default:
+			return NewResponseErrorWithCause(v.Code(), err, v.Message(), http.StatusInternalServerError)
 		}
 	}
-	return nil
+	return NewResponseErrorWithCause(fe.INTERNAL_ERROR, err, "INTERNAL SERVER ERROR", http.StatusInternalServerError)
 }
