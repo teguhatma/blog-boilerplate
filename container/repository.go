@@ -6,7 +6,7 @@ import (
 
 var userRepository repository.Querier
 
-func getUserRepository() (repository.Querier, error) {
+func getRepository() (repository.Querier, error) {
 	if userRepository == nil {
 		getDB := getDatabase()
 		userRepository = repository.New(getDB)

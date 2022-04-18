@@ -9,5 +9,9 @@ func CreateHTTPContainer(router *mux.Router) error {
 		return err
 	}
 
+	if err := getTagController(router); err != nil {
+		return err
+	}
+
 	return nil
 }

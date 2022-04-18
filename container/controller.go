@@ -14,3 +14,13 @@ func getUserController(router *mux.Router) error {
 	c.NewUserController(router, service)
 	return nil
 }
+
+func getTagController(router *mux.Router) error {
+	service, err := getTagService()
+	if err != nil {
+		return err
+	}
+
+	c.NewTagController(router, service)
+	return nil
+}
