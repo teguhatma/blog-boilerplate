@@ -24,3 +24,13 @@ func getTagController(router *mux.Router) error {
 	c.NewTagController(router, service)
 	return nil
 }
+
+func getConctactController(router *mux.Router) error {
+	service, err := getContactService()
+	if err != nil {
+		return err
+	}
+
+	c.NewContactController(router, service)
+	return nil
+}

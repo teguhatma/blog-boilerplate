@@ -13,5 +13,9 @@ func CreateHTTPContainer(router *mux.Router) error {
 		return err
 	}
 
+	if err := getConctactController(router); err != nil {
+		return err
+	}
+
 	return nil
 }
