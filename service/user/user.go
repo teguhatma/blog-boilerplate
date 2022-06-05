@@ -5,16 +5,17 @@ import (
 	"database/sql"
 
 	fe "github.com/teguhatma/blog-boilerplate/errors"
-	r "github.com/teguhatma/blog-boilerplate/errors"
 	"github.com/teguhatma/blog-boilerplate/repository"
 	"github.com/teguhatma/blog-boilerplate/request"
 	"github.com/teguhatma/blog-boilerplate/response"
+	"github.com/teguhatma/blog-boilerplate/token"
 	"github.com/teguhatma/blog-boilerplate/utils"
 )
 
 type Service interface {
 	GetUser(context.Context, string) (*response.UserResponse, error)
 	CreateUser(context.Context, request.UserRequest) (*response.UserResponse, error)
+	LoginUser(context.Context, request.LoginUserRequest) (*response.LoginUserResponse, error)
 }
 
 type service struct {
@@ -31,9 +32,9 @@ func (service *service) GetUser(ctx context.Context, username string) (*response
 	user, err := service.repo.GetUser(ctx, username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, r.NewWithCause(fe.NOT_FOUND, err, "User Not Found")
+			return nil, fe.NewWithCause(fe.NOT_FOUND, err, "User Not Found")
 		}
-		return nil, r.NewWithCause(fe.INTERNAL_ERROR, err, "Get User")
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Get User")
 	}
 
 	res := mapToResponse(user)
@@ -43,17 +44,53 @@ func (service *service) GetUser(ctx context.Context, username string) (*response
 func (service *service) CreateUser(ctx context.Context, request request.UserRequest) (*response.UserResponse, error) {
 	req, err := mapToRepository(request)
 	if err != nil {
-		return nil, r.NewWithCause(fe.BAD_MESSAGE, err, "Map Request to Domain")
+		return nil, fe.NewWithCause(fe.BAD_MESSAGE, err, "Map Request to Domain")
 	}
 
 	user, err := service.repo.CreateUser(ctx, *req)
 	if err != nil {
-		return nil, r.NewWithCause(fe.INTERNAL_ERROR, err, "Create User")
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Create User")
 	}
 
 	res := mapToResponse(user)
 
 	return res, nil
+}
+
+func (service *service) LoginUser(ctx context.Context, req request.LoginUserRequest) (*response.LoginUserResponse, error) {
+	user, err := service.repo.GetUser(ctx, req.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fe.NewWithCause(fe.NOT_FOUND, err, "User Not Found")
+		}
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Get User")
+	}
+
+	err = utils.CheckPassword(req.Password, user.HashedPassword)
+	if err != nil {
+		return nil, fe.NewWithCause(fe.BAD_MESSAGE, err, "Check Password")
+	}
+
+	symmectricKey := utils.GenerateNewID()
+	tokenMaker, err := token.NewPasetoMaker(symmectricKey)
+
+	// TODO 1 => use environment variable
+	accessToken, err := tokenMaker.CreateToken(user.Username, 15)
+	if err != nil {
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Create Token")
+	}
+
+	res := mapToLoginResponse(accessToken, user)
+	return res, nil
+}
+
+func mapToLoginResponse(accessToken string, user repository.User) *response.LoginUserResponse {
+	userRes := mapToResponse(user)
+
+	return &response.LoginUserResponse{
+		AccessToken: accessToken,
+		User:        *userRes,
+	}
 }
 
 func mapToResponse(res repository.User) *response.UserResponse {

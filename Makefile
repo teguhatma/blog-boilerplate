@@ -1,8 +1,8 @@
 createdb:
-	docker exec -it postgres12 createdb --username=root blog
+	docker exec -it blog-backend createdb --username=root blog
 
 dropdb:
-	docker exec -it postgres12 dropdb --username=root blog
+	docker exec -it blog-backend dropdb --username=root blog
 
 createschema:
 	migrate create -ext sql -dir migration -seq init_schema

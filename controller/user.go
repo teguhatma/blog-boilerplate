@@ -18,6 +18,7 @@ type controller struct {
 func (c *controller) RegisterRoutes(router *mux.Router) {
 	router.Handle("/api/v1/users/{username}", shttp.AppHandler(c.getUser)).Methods(http.MethodGet)
 	router.Handle("/api/v1/users", shttp.AppHandler(c.createUser)).Methods(http.MethodPost)
+	router.Handle("/api/v1/users/login", shttp.AppHandler(c.loginUser)).Methods(http.MethodPost)
 }
 
 func (c *controller) getUser(r *http.Request) (*shttp.Response, error) {
@@ -49,6 +50,24 @@ func (c *controller) createUser(r *http.Request) (*shttp.Response, error) {
 	return &shttp.Response{
 		Data:       user,
 		StatusCode: http.StatusCreated,
+	}, nil
+}
+
+func (c *controller) loginUser(r *http.Request) (*shttp.Response, error) {
+	var req request.LoginUserRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, errResponse(err)
+	}
+
+	user, err := c.service.LoginUser(context.Background(), req)
+	if err != nil {
+		return nil, errResponse(err)
+	}
+
+	return &shttp.Response{
+		Data:       user,
+		StatusCode: http.StatusOK,
 	}, nil
 }
 
