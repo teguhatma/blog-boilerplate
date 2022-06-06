@@ -16,7 +16,7 @@ type contactController struct {
 }
 
 func (c *contactController) RegisterRoutes(router *mux.Router) {
-	router.Handle("/api/v1/contacts", shttp.AppHandler(c.createContact)).Methods(http.MethodPost)
+	router.Handle("/api/v1/contact", shttp.AppHandler(c.createContact)).Methods(http.MethodPost)
 }
 
 func (c *contactController) createContact(r *http.Request) (*shttp.Response, error) {
