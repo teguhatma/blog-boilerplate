@@ -20,6 +20,7 @@ type Querier interface {
 	GetEntries(ctx context.Context, id int64) (Entry, error)
 	GetTag(ctx context.Context, id int64) (Tag, error)
 	GetUser(ctx context.Context, username string) (User, error)
+	GetUsers(ctx context.Context, arg GetUsersParams) ([]User, error)
 	ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error)
 	ListTags(ctx context.Context, arg ListTagsParams) ([]Tag, error)
 	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)
