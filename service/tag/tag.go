@@ -59,12 +59,12 @@ func (service *service) GetTag(ctx context.Context, id int64) (*response.TagResp
 }
 
 func (service *service) ListTag(ctx context.Context, limit, offset int32) ([]*response.TagResponse, error) {
-	arg := repository.ListTagParams{
+	arg := repository.ListTagsParams{
 		Limit:  limit,
 		Offset: offset,
 	}
 
-	tags, err := service.repo.ListTag(ctx, arg)
+	tags, err := service.repo.ListTags(ctx, arg)
 	if err != nil {
 		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "List Tag")
 	}

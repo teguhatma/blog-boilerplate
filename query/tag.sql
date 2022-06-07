@@ -5,9 +5,10 @@ INSERT INTO tag (
     $1
 ) RETURNING *;
 
--- name: ListTag :many
+
+-- name: ListTags :many
 SELECT * FROM tag
-ORDER BY id
+ORDER BY name
 LIMIT $1
 OFFSET $2;
 
