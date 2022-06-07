@@ -67,20 +67,13 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 	return i, err
 }
 
-const getUsers = `-- name: GetUsers :many
+const listUsers = `-- name: ListUsers :many
 SELECT id, username, hashed_password, full_name, email, updated_at, created_at FROM users
 ORDER BY id
-LIMIT $1
-OFFSET $2
 `
 
-type GetUsersParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]User, error) {
-	rows, err := q.query(ctx, q.getUsersStmt, getUsers, arg.Limit, arg.Offset)
+func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.query(ctx, q.listUsersStmt, listUsers)
 	if err != nil {
 		return nil, err
 	}

@@ -19,6 +19,7 @@ func (c *controller) RegisterRoutes(router *mux.Router) {
 	router.Handle("/api/v1/user/{username}", shttp.AppHandler(c.getUser)).Methods(http.MethodGet)
 	router.Handle("/api/v1/user", shttp.AppHandler(c.createUser)).Methods(http.MethodPost)
 	router.Handle("/api/v1/user/login", shttp.AppHandler(c.loginUser)).Methods(http.MethodPost)
+	router.Handle("/api/v1/users", shttp.AppHandler(c.getUsers)).Methods(http.MethodGet)
 }
 
 func (c *controller) getUser(r *http.Request) (*shttp.Response, error) {
@@ -67,6 +68,18 @@ func (c *controller) loginUser(r *http.Request) (*shttp.Response, error) {
 
 	return &shttp.Response{
 		Data:       user,
+		StatusCode: http.StatusOK,
+	}, nil
+}
+
+func (c *controller) getUsers(r *http.Request) (*shttp.Response, error) {
+	users, err := c.service.GetUsers(context.Background())
+	if err != nil {
+		return nil, errResponse(err)
+	}
+
+	return &shttp.Response{
+		Data:       users,
 		StatusCode: http.StatusOK,
 	}, nil
 }

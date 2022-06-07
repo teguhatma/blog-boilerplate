@@ -16,6 +16,7 @@ type Service interface {
 	GetUser(context.Context, string) (*response.UserResponse, error)
 	CreateUser(context.Context, request.UserRequest) (*response.UserResponse, error)
 	LoginUser(context.Context, request.LoginUserRequest) (*response.LoginUserResponse, error)
+	GetUsers(context.Context) ([]*response.UserResponse, error)
 }
 
 type service struct {
@@ -37,7 +38,7 @@ func (service *service) GetUser(ctx context.Context, username string) (*response
 		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Get User")
 	}
 
-	res := mapToResponse(user)
+	res := domainToResponse(user)
 	return res, nil
 }
 
@@ -52,7 +53,7 @@ func (service *service) CreateUser(ctx context.Context, request request.UserRequ
 		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Create User")
 	}
 
-	res := mapToResponse(user)
+	res := domainToResponse(user)
 
 	return res, nil
 }
@@ -84,8 +85,18 @@ func (service *service) LoginUser(ctx context.Context, req request.LoginUserRequ
 	return res, nil
 }
 
+func (service *service) GetUsers(ctx context.Context) ([]*response.UserResponse, error) {
+	users, err := service.repo.ListUsers(ctx)
+	if err != nil {
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Get Users")
+	}
+
+	res := domainToResponses(users)
+	return res, nil
+}
+
 func mapToLoginResponse(accessToken string, user repository.User) *response.LoginUserResponse {
-	userRes := mapToResponse(user)
+	userRes := domainToResponse(user)
 
 	return &response.LoginUserResponse{
 		AccessToken: accessToken,
@@ -93,7 +104,7 @@ func mapToLoginResponse(accessToken string, user repository.User) *response.Logi
 	}
 }
 
-func mapToResponse(res repository.User) *response.UserResponse {
+func domainToResponse(res repository.User) *response.UserResponse {
 	return &response.UserResponse{
 		ID:        res.ID.Int64,
 		Username:  res.Username,
@@ -116,4 +127,15 @@ func mapToRepository(req request.UserRequest) (*repository.CreateUserParams, err
 		FullName:       req.FullName,
 		Email:          req.Email,
 	}, nil
+}
+
+func domainToResponses(users []repository.User) []*response.UserResponse {
+	var response []*response.UserResponse
+
+	for _, user := range users {
+		res := domainToResponse(user)
+		response = append(response, res)
+	}
+
+	return response
 }

@@ -13,8 +13,6 @@ SELECT * FROM users
 WHERE username = $1 LIMIT 1;
 
 
--- name: GetUsers :many
+-- name: ListUsers :many
 SELECT * FROM users
-ORDER BY id
-LIMIT $1
-OFFSET $2;
+ORDER BY id;
