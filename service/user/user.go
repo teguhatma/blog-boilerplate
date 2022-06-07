@@ -17,6 +17,7 @@ type Service interface {
 	CreateUser(context.Context, request.UserRequest) (*response.UserResponse, error)
 	LoginUser(context.Context, request.LoginUserRequest) (*response.LoginUserResponse, error)
 	GetUsers(context.Context) ([]*response.UserResponse, error)
+	UpdateUser(context.Context, request.UpdateUserRequest) (*response.UserResponse, error)
 }
 
 type service struct {
@@ -95,6 +96,10 @@ func (service *service) GetUsers(ctx context.Context) ([]*response.UserResponse,
 	return res, nil
 }
 
+func (service *service) UpdateUser(ctx context.Context, request request.UpdateUserRequest) (*response.UserResponse, error) {
+	req, err := mapToRepository(request)
+}
+
 func mapToLoginResponse(accessToken string, user repository.User) *response.LoginUserResponse {
 	userRes := domainToResponse(user)
 
@@ -126,6 +131,14 @@ func mapToRepository(req request.UserRequest) (*repository.CreateUserParams, err
 		HashedPassword: hashedPassword,
 		FullName:       req.FullName,
 		Email:          req.Email,
+	}, nil
+}
+
+func mapToRepositoryUserUpdate(req request.UpdateUserRequest) (*repository.UpdateUserParams, error) {
+	return &repository.UpdateUserParams{
+		Username: req.Username,
+		FullName: req.FullName,
+		Email:    req.Email,
 	}, nil
 }
 
