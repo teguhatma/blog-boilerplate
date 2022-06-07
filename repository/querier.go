@@ -26,6 +26,7 @@ type Querier interface {
 	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)
 	UpdateEntries(ctx context.Context, arg UpdateEntriesParams) (Entry, error)
 	UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, error)
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

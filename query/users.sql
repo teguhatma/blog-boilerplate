@@ -16,3 +16,9 @@ WHERE username = $1 LIMIT 1;
 -- name: ListUsers :many
 SELECT * FROM users
 ORDER BY id;
+
+-- name: UpdateUser :one
+UPDATE users
+SET username = $2, full_name = $3, email = $4
+WHERE id = $1
+RETURNING *;

@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -101,4 +102,38 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET username = $2, full_name = $3, email = $4
+WHERE id = $1
+RETURNING id, username, hashed_password, full_name, email, updated_at, created_at
+`
+
+type UpdateUserParams struct {
+	ID       sql.NullInt64 `json:"id"`
+	Username string        `json:"username"`
+	FullName string        `json:"full_name"`
+	Email    string        `json:"email"`
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.queryRow(ctx, q.updateUserStmt, updateUser,
+		arg.ID,
+		arg.Username,
+		arg.FullName,
+		arg.Email,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.HashedPassword,
+		&i.FullName,
+		&i.Email,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+	)
+	return i, err
 }

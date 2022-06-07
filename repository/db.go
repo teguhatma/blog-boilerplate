@@ -75,6 +75,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateTagStmt, err = db.PrepareContext(ctx, updateTag); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTag: %w", err)
 	}
+	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
+	}
 	return &q, nil
 }
 
@@ -165,6 +168,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateTagStmt: %w", cerr)
 		}
 	}
+	if q.updateUserStmt != nil {
+		if cerr := q.updateUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserStmt: %w", cerr)
+		}
+	}
 	return err
 }
 
@@ -221,6 +229,7 @@ type Queries struct {
 	updateContactStmt *sql.Stmt
 	updateEntriesStmt *sql.Stmt
 	updateTagStmt     *sql.Stmt
+	updateUserStmt    *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -244,5 +253,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateContactStmt: q.updateContactStmt,
 		updateEntriesStmt: q.updateEntriesStmt,
 		updateTagStmt:     q.updateTagStmt,
+		updateUserStmt:    q.updateUserStmt,
 	}
 }

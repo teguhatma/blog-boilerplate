@@ -17,7 +17,7 @@ type Service interface {
 	CreateUser(context.Context, request.UserRequest) (*response.UserResponse, error)
 	LoginUser(context.Context, request.LoginUserRequest) (*response.LoginUserResponse, error)
 	GetUsers(context.Context) ([]*response.UserResponse, error)
-	UpdateUser(context.Context, request.UpdateUserRequest) (*response.UserResponse, error)
+	UpdateUser(context.Context, string, request.UpdateUserRequest) (*response.UserResponse, error)
 }
 
 type service struct {
@@ -96,8 +96,29 @@ func (service *service) GetUsers(ctx context.Context) ([]*response.UserResponse,
 	return res, nil
 }
 
-func (service *service) UpdateUser(ctx context.Context, request request.UpdateUserRequest) (*response.UserResponse, error) {
-	req, err := mapToRepository(request)
+func (service *service) UpdateUser(ctx context.Context, username string, request request.UpdateUserRequest) (*response.UserResponse, error) {
+	user, err := service.repo.GetUser(ctx, username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fe.NewWithCause(fe.NOT_FOUND, err, "User Not Found")
+		}
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Get User")
+	}
+
+	args := repository.UpdateUserParams{
+		ID:       user.ID,
+		Username: request.Username,
+		FullName: request.FullName,
+		Email:    request.Email,
+	}
+
+	user, err = service.repo.UpdateUser(ctx, args)
+	if err != nil {
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Update User")
+	}
+
+	res := domainToResponse(user)
+	return res, nil
 }
 
 func mapToLoginResponse(accessToken string, user repository.User) *response.LoginUserResponse {
@@ -131,14 +152,6 @@ func mapToRepository(req request.UserRequest) (*repository.CreateUserParams, err
 		HashedPassword: hashedPassword,
 		FullName:       req.FullName,
 		Email:          req.Email,
-	}, nil
-}
-
-func mapToRepositoryUserUpdate(req request.UpdateUserRequest) (*repository.UpdateUserParams, error) {
-	return &repository.UpdateUserParams{
-		Username: req.Username,
-		FullName: req.FullName,
-		Email:    req.Email,
 	}, nil
 }
 

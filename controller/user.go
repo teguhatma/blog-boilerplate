@@ -87,12 +87,13 @@ func (c *controller) getUsers(r *http.Request) (*shttp.Response, error) {
 
 func (c *controller) updateUser(r *http.Request) (*shttp.Response, error) {
 	var req request.UpdateUserRequest
+	username := mux.Vars(r)["username"]
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, errResponse(err)
 	}
 
-	id, err := c.service.UpdateUser(context.Background(), req)
+	id, err := c.service.UpdateUser(context.Background(), username, req)
 	if err != nil {
 		return nil, errResponse(err)
 	}
