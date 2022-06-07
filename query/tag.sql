@@ -5,13 +5,9 @@ INSERT INTO tag (
     $1
 ) RETURNING *;
 
-
 -- name: ListTags :many
 SELECT * FROM tag
-ORDER BY name
-LIMIT $1
-OFFSET $2;
-
+ORDER BY name;
 
 -- name: UpdateTag :one
 UPDATE tag

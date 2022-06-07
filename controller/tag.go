@@ -20,7 +20,7 @@ func (c *tagController) RegisterRoutes(router *mux.Router) {
 	router.Handle("/api/v1/tag", shttp.AppHandler(c.createTag)).Methods(http.MethodPost)
 	router.Handle("/api/v1/tag/{id:[0-9]+}", shttp.AppHandler(c.getTag)).Methods(http.MethodGet)
 	router.Handle("/api/v1/tag/{id:[0-9]+}", shttp.AppHandler(c.deleteTag)).Methods(http.MethodDelete)
-	router.Handle("/api/v1/tags", shttp.AppHandler(c.listTag)).Queries("limit", "{limit}").Queries("offset", "{offset}").Methods(http.MethodGet)
+	router.Handle("/api/v1/tags", shttp.AppHandler(c.listTag)).Methods(http.MethodGet)
 	router.Handle("/api/v1/tag/{id:[0-9]+}", shttp.AppHandler(c.updateTag)).Methods(http.MethodPut)
 }
 
@@ -76,15 +76,7 @@ func (c *tagController) deleteTag(r *http.Request) (*shttp.Response, error) {
 }
 
 func (c *tagController) listTag(r *http.Request) (*shttp.Response, error) {
-	a := r.FormValue("limit")
-	b := r.FormValue("offset")
-
-	limit, offset, err := convertToInt32(a, b)
-	if err != nil {
-		return nil, errResponse(err)
-	}
-
-	tags, err := c.service.ListTag(context.Background(), limit, offset)
+	tags, err := c.service.ListTag(context.Background())
 	if err != nil {
 		return nil, errResponse(err)
 	}

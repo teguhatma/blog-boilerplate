@@ -13,7 +13,7 @@ type Service interface {
 	CreateTag(ctx context.Context, name string) (*response.TagResponse, error)
 	DeleteTag(ctx context.Context, id int64) error
 	GetTag(ctx context.Context, id int64) (*response.TagResponse, error)
-	ListTag(ctx context.Context, limit, offset int32) ([]*response.TagResponse, error)
+	ListTag(ctx context.Context) ([]*response.TagResponse, error)
 	UpdateTag(ctx context.Context, id int64, name string) (*response.TagResponse, error)
 }
 
@@ -58,13 +58,8 @@ func (service *service) GetTag(ctx context.Context, id int64) (*response.TagResp
 	return res, nil
 }
 
-func (service *service) ListTag(ctx context.Context, limit, offset int32) ([]*response.TagResponse, error) {
-	arg := repository.ListTagsParams{
-		Limit:  limit,
-		Offset: offset,
-	}
-
-	tags, err := service.repo.ListTags(ctx, arg)
+func (service *service) ListTag(ctx context.Context) ([]*response.TagResponse, error) {
+	tags, err := service.repo.ListTags(ctx)
 	if err != nil {
 		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "List Tag")
 	}

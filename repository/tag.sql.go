@@ -59,17 +59,10 @@ func (q *Queries) GetTag(ctx context.Context, id int64) (Tag, error) {
 const listTags = `-- name: ListTags :many
 SELECT id, name, updated_at, created_at FROM tag
 ORDER BY name
-LIMIT $1
-OFFSET $2
 `
 
-type ListTagsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) ListTags(ctx context.Context, arg ListTagsParams) ([]Tag, error) {
-	rows, err := q.query(ctx, q.listTagsStmt, listTags, arg.Limit, arg.Offset)
+func (q *Queries) ListTags(ctx context.Context) ([]Tag, error) {
+	rows, err := q.query(ctx, q.listTagsStmt, listTags)
 	if err != nil {
 		return nil, err
 	}

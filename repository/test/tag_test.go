@@ -33,12 +33,12 @@ func TestListTag(t *testing.T) {
 		createRandomTag(t)
 	}
 
-	arg := repository.ListTagsParams{
-		Limit:  5,
-		Offset: 0,
-	}
+	// arg := repository.ListTagsParams{
+	// 	Limit:  5,
+	// 	Offset: 0,
+	// }
 
-	tags, err := testQueries.ListTags(context.Background(), arg)
+	tags, err := testQueries.ListTags(context.Background())
 	require.NoError(t, err)
 	require.Len(t, tags, 5)
 
