@@ -48,7 +48,7 @@ func (c *tagController) getTag(r *http.Request) (*shttp.Response, error) {
 		return nil, errResponse(err)
 	}
 
-	res, err := c.service.GetTag(context.Background(), int64(id))
+	res, err := c.service.GetTag(context.Background(), id)
 	if err != nil {
 		return nil, errResponse(err)
 	}
@@ -65,7 +65,7 @@ func (c *tagController) deleteTag(r *http.Request) (*shttp.Response, error) {
 		return nil, errResponse(err)
 	}
 
-	if err := c.service.DeleteTag(context.Background(), int64(id)); err != nil {
+	if err := c.service.DeleteTag(context.Background(), id); err != nil {
 		return nil, errResponse(err)
 	}
 
@@ -99,7 +99,7 @@ func (c *tagController) updateTag(r *http.Request) (*shttp.Response, error) {
 		return nil, errResponse(err)
 	}
 
-	res, err := c.service.UpdateTag(context.Background(), int64(id), req.Name)
+	res, err := c.service.UpdateTag(context.Background(), id, req.Name)
 	if err != nil {
 		return nil, errResponse(err)
 	}

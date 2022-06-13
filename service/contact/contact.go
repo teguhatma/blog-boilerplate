@@ -12,6 +12,7 @@ import (
 
 type Service interface {
 	CreateContact(ctx context.Context, req *request.ContactRequest) (*response.ContactResponse, error)
+	GetContact(ctx context.Context, id int) (*response.ContactResponse, error)
 }
 
 type service struct {
@@ -42,6 +43,19 @@ func (service *service) CreateContact(ctx context.Context, req *request.ContactR
 	contact, err := service.repo.CreateContact(ctx, arg)
 	if err != nil {
 		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Create Contact")
+	}
+
+	res := domainToResponse(contact)
+	return res, nil
+}
+
+func (service *service) GetContact(ctx context.Context, id int) (*response.ContactResponse, error) {
+	contact, err := service.repo.GetContact(ctx, int64(id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fe.NewWithCause(fe.NOT_FOUND, err, "Contact Not Found")
+		}
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Get Contact")
 	}
 
 	res := domainToResponse(contact)

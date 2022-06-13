@@ -11,10 +11,10 @@ import (
 
 type Service interface {
 	CreateTag(ctx context.Context, name string) (*response.TagResponse, error)
-	DeleteTag(ctx context.Context, id int64) error
-	GetTag(ctx context.Context, id int64) (*response.TagResponse, error)
+	DeleteTag(ctx context.Context, id int) error
+	GetTag(ctx context.Context, id int) (*response.TagResponse, error)
 	ListTag(ctx context.Context) ([]*response.TagResponse, error)
-	UpdateTag(ctx context.Context, id int64, name string) (*response.TagResponse, error)
+	UpdateTag(ctx context.Context, id int, name string) (*response.TagResponse, error)
 }
 
 type service struct {
@@ -36,8 +36,8 @@ func (service *service) CreateTag(ctx context.Context, name string) (*response.T
 	return res, nil
 }
 
-func (service *service) DeleteTag(ctx context.Context, id int64) error {
-	err := service.repo.DeleteTag(ctx, id)
+func (service *service) DeleteTag(ctx context.Context, id int) error {
+	err := service.repo.DeleteTag(ctx, int64(id))
 	if err != nil {
 		return fe.NewWithCause(fe.INTERNAL_ERROR, err, "Delete Tag")
 	}
@@ -45,8 +45,8 @@ func (service *service) DeleteTag(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (service *service) GetTag(ctx context.Context, id int64) (*response.TagResponse, error) {
-	tag, err := service.repo.GetTag(ctx, id)
+func (service *service) GetTag(ctx context.Context, id int) (*response.TagResponse, error) {
+	tag, err := service.repo.GetTag(ctx, int64(id))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fe.NewWithCause(fe.NOT_FOUND, err, "Tag Not Found")
@@ -69,9 +69,9 @@ func (service *service) ListTag(ctx context.Context) ([]*response.TagResponse, e
 	return res, nil
 }
 
-func (service *service) UpdateTag(ctx context.Context, id int64, name string) (*response.TagResponse, error) {
+func (service *service) UpdateTag(ctx context.Context, id int, name string) (*response.TagResponse, error) {
 	arg := repository.UpdateTagParams{
-		ID:   id,
+		ID:   int64(id),
 		Name: name,
 	}
 
