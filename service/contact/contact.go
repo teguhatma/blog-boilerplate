@@ -14,6 +14,7 @@ type Service interface {
 	CreateContact(ctx context.Context, req *request.ContactRequest) (*response.ContactResponse, error)
 	GetContact(ctx context.Context, id int) (*response.ContactResponse, error)
 	UpdateContact(ctx context.Context, id int, req *request.ContactRequest) (*response.ContactResponse, error)
+	DeleteContact(ctx context.Context, id int) error
 }
 
 type service struct {
@@ -94,6 +95,23 @@ func (service *service) UpdateContact(ctx context.Context, id int, req *request.
 
 	res := domainToResponse(contact)
 	return res, nil
+}
+
+func (service *service) DeleteContact(ctx context.Context, id int) error {
+	_, err := service.repo.GetContact(ctx, int64(id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fe.NewWithCause(fe.NOT_FOUND, err, "Contact Not Found")
+		}
+		return fe.NewWithCause(fe.INTERNAL_ERROR, err, "Get User")
+	}
+
+	err = service.repo.DeleteContact(ctx, int64(id))
+	if err != nil {
+		return fe.NewWithCause(fe.INTERNAL_ERROR, err, "Create Contact")
+	}
+
+	return nil
 }
 
 func domainToResponse(res repository.Contact) *response.ContactResponse {

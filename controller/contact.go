@@ -20,6 +20,7 @@ func (c *contactController) RegisterRoutes(router *mux.Router) {
 	router.Handle("/api/v1/contact", shttp.AppHandler(c.createContact)).Methods(http.MethodPost)
 	router.Handle("/api/v1/contact/{id:[0-9]+}", shttp.AppHandler(c.getContact)).Methods(http.MethodGet)
 	router.Handle("/api/v1/contact/{id:[0-9]+}", shttp.AppHandler(c.updateContact)).Methods(http.MethodPut)
+	router.Handle("/api/v1/contact/{id:[0-9]+}", shttp.AppHandler(c.deleteContact)).Methods(http.MethodDelete)
 }
 
 func (c *contactController) createContact(r *http.Request) (*shttp.Response, error) {
@@ -77,6 +78,23 @@ func (c *contactController) updateContact(r *http.Request) (*shttp.Response, err
 	return &shttp.Response{
 		Data:       res,
 		StatusCode: http.StatusCreated,
+	}, nil
+}
+
+func (c *contactController) deleteContact(r *http.Request) (*shttp.Response, error) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		return nil, errResponse(err)
+	}
+
+	err = c.service.DeleteContact(context.Background(), id)
+	if err != nil {
+		return nil, errResponse(err)
+	}
+
+	return &shttp.Response{
+		Data:       id,
+		StatusCode: http.StatusOK,
 	}, nil
 }
 
