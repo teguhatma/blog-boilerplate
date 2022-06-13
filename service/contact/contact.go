@@ -15,6 +15,7 @@ type Service interface {
 	GetContact(ctx context.Context, id int) (*response.ContactResponse, error)
 	UpdateContact(ctx context.Context, id int, req *request.ContactRequest) (*response.ContactResponse, error)
 	DeleteContact(ctx context.Context, id int) error
+	GetAllContact(ctx context.Context) ([]*response.ContactResponse, error)
 }
 
 type service struct {
@@ -114,6 +115,16 @@ func (service *service) DeleteContact(ctx context.Context, id int) error {
 	return nil
 }
 
+func (service *service) GetAllContact(ctx context.Context) ([]*response.ContactResponse, error) {
+	contacts, err := service.repo.GetAllContact(ctx)
+	if err != nil {
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Get All Contact")
+	}
+
+	res := domainToResponses(contacts)
+	return res, nil
+}
+
 func domainToResponse(res repository.Contact) *response.ContactResponse {
 	return &response.ContactResponse{
 		ID:      int(res.ID),
@@ -121,4 +132,15 @@ func domainToResponse(res repository.Contact) *response.ContactResponse {
 		Github:  res.Github.String,
 		Twitter: res.Twitter.String,
 	}
+}
+
+func domainToResponses(contacts []repository.Contact) []*response.ContactResponse {
+	var response []*response.ContactResponse
+
+	for _, contact := range contacts {
+		res := domainToResponse(contact)
+		response = append(response, res)
+	}
+
+	return response
 }
