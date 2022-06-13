@@ -45,6 +45,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteTagStmt, err = db.PrepareContext(ctx, deleteTag); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteTag: %w", err)
 	}
+	if q.getAllContactStmt, err = db.PrepareContext(ctx, getAllContact); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAllContact: %w", err)
+	}
 	if q.getContactStmt, err = db.PrepareContext(ctx, getContact); err != nil {
 		return nil, fmt.Errorf("error preparing query GetContact: %w", err)
 	}
@@ -116,6 +119,11 @@ func (q *Queries) Close() error {
 	if q.deleteTagStmt != nil {
 		if cerr := q.deleteTagStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteTagStmt: %w", cerr)
+		}
+	}
+	if q.getAllContactStmt != nil {
+		if cerr := q.getAllContactStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAllContactStmt: %w", cerr)
 		}
 	}
 	if q.getContactStmt != nil {
@@ -219,6 +227,7 @@ type Queries struct {
 	deleteContactStmt *sql.Stmt
 	deleteEntriesStmt *sql.Stmt
 	deleteTagStmt     *sql.Stmt
+	getAllContactStmt *sql.Stmt
 	getContactStmt    *sql.Stmt
 	getEntriesStmt    *sql.Stmt
 	getTagStmt        *sql.Stmt
@@ -243,6 +252,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteContactStmt: q.deleteContactStmt,
 		deleteEntriesStmt: q.deleteEntriesStmt,
 		deleteTagStmt:     q.deleteTagStmt,
+		getAllContactStmt: q.getAllContactStmt,
 		getContactStmt:    q.getContactStmt,
 		getEntriesStmt:    q.getEntriesStmt,
 		getTagStmt:        q.getTagStmt,

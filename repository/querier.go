@@ -16,6 +16,7 @@ type Querier interface {
 	DeleteContact(ctx context.Context, id int64) error
 	DeleteEntries(ctx context.Context, id int64) error
 	DeleteTag(ctx context.Context, id int64) error
+	GetAllContact(ctx context.Context) ([]Contact, error)
 	GetContact(ctx context.Context, id int64) (Contact, error)
 	GetEntries(ctx context.Context, id int64) (Entry, error)
 	GetTag(ctx context.Context, id int64) (Tag, error)

@@ -50,6 +50,41 @@ func (q *Queries) DeleteContact(ctx context.Context, id int64) error {
 	return err
 }
 
+const getAllContact = `-- name: GetAllContact :many
+SELECT id, owner, github, twitter, updated_at, created_at FROM contact
+ORDER BY id
+`
+
+func (q *Queries) GetAllContact(ctx context.Context) ([]Contact, error) {
+	rows, err := q.query(ctx, q.getAllContactStmt, getAllContact)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Contact{}
+	for rows.Next() {
+		var i Contact
+		if err := rows.Scan(
+			&i.ID,
+			&i.Owner,
+			&i.Github,
+			&i.Twitter,
+			&i.UpdatedAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getContact = `-- name: GetContact :one
 SELECT id, owner, github, twitter, updated_at, created_at FROM contact
 WHERE id = $1 LIMIT 1

@@ -20,3 +20,7 @@ WHERE id = $1;
 -- name: GetContact :one
 SELECT * FROM contact
 WHERE id = $1 LIMIT 1;
+
+-- name: GetAllContact :many
+SELECT * FROM contact
+ORDER BY id;
