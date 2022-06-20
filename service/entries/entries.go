@@ -33,7 +33,7 @@ func (s *service) CreateEntry(ctx context.Context, req request.CreateEntryReques
 		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Get User")
 	}
 
-	tag, err := s.repo.GetTag(ctx, req.Tag)
+	tag, err := s.repo.GetTag(ctx, req.TagName)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fe.NewWithCause(fe.NOT_FOUND, err, "Tag Not Found")

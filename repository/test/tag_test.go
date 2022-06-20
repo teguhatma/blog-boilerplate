@@ -50,7 +50,7 @@ func TestListTag(t *testing.T) {
 func TestGetTag(t *testing.T) {
 	tag1 := createRandomTag(t)
 
-	tag2, err := testQueries.GetTag(context.Background(), tag1.ID)
+	tag2, err := testQueries.GetTag(context.Background(), tag1.Name)
 	require.NoError(t, err)
 	require.NotEmpty(t, tag2)
 

@@ -12,7 +12,7 @@ import (
 type Service interface {
 	CreateTag(ctx context.Context, name string) (*response.TagResponse, error)
 	DeleteTag(ctx context.Context, id int) error
-	GetTag(ctx context.Context, id int) (*response.TagResponse, error)
+	GetTag(ctx context.Context, name string) (*response.TagResponse, error)
 	ListTag(ctx context.Context) ([]*response.TagResponse, error)
 	UpdateTag(ctx context.Context, id int, name string) (*response.TagResponse, error)
 }
@@ -45,8 +45,8 @@ func (service *service) DeleteTag(ctx context.Context, id int) error {
 	return nil
 }
 
-func (service *service) GetTag(ctx context.Context, id int) (*response.TagResponse, error) {
-	tag, err := service.repo.GetTag(ctx, int64(id))
+func (service *service) GetTag(ctx context.Context, name string) (*response.TagResponse, error) {
+	tag, err := service.repo.GetTag(ctx, name)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fe.NewWithCause(fe.NOT_FOUND, err, "Tag Not Found")

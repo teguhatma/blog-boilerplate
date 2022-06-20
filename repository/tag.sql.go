@@ -41,11 +41,11 @@ func (q *Queries) DeleteTag(ctx context.Context, id int64) error {
 
 const getTag = `-- name: GetTag :one
 SELECT id, name, updated_at, created_at FROM tag
-WHERE id = $1 LIMIT 1
+WHERE name = $1 LIMIT 1
 `
 
-func (q *Queries) GetTag(ctx context.Context, id int64) (Tag, error) {
-	row := q.queryRow(ctx, q.getTagStmt, getTag, id)
+func (q *Queries) GetTag(ctx context.Context, name string) (Tag, error) {
+	row := q.queryRow(ctx, q.getTagStmt, getTag, name)
 	var i Tag
 	err := row.Scan(
 		&i.ID,
