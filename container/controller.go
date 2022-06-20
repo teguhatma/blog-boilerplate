@@ -34,3 +34,13 @@ func getConctactController(router *mux.Router) error {
 	c.NewContactController(router, service)
 	return nil
 }
+
+func getEntriesController(router *mux.Router) error {
+	service, err := getEntryService()
+	if err != nil {
+		return err
+	}
+
+	c.NewEntriesController(router, service)
+	return nil
+}

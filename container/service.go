@@ -2,6 +2,7 @@ package container
 
 import (
 	"github.com/teguhatma/blog-boilerplate/service/contact"
+	"github.com/teguhatma/blog-boilerplate/service/entries"
 	"github.com/teguhatma/blog-boilerplate/service/tag"
 	"github.com/teguhatma/blog-boilerplate/service/user"
 )
@@ -9,6 +10,7 @@ import (
 var userService user.Service
 var tagService tag.Service
 var contactService contact.Service
+var entryService entries.Service
 
 func getUserService() (user.Service, error) {
 	if userService == nil {
@@ -41,4 +43,15 @@ func getContactService() (contact.Service, error) {
 		contactService = contact.NewService(repo)
 	}
 	return contactService, nil
+}
+
+func getEntryService() (entries.Service, error) {
+	if entryService == nil {
+		repo, err := getRepository()
+		if err != nil {
+			return nil, err
+		}
+		entryService = entries.NewService(repo)
+	}
+	return entryService, nil
 }
