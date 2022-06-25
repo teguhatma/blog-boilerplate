@@ -36,7 +36,7 @@ You need to install these packages first.
    ```bash
    docker-compose up -d
    ```
-2. Creating schema
+2. Create schema
    ```bash
    make createschema
    ```
