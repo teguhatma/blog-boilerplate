@@ -5,18 +5,17 @@ import (
 	"log"
 
 	_ "github.com/lib/pq"
+	"github.com/teguhatma/blog-boilerplate/utils"
 )
 
-var dbS *sql.DB
-
-const (
-	DB_DRIVER = "postgres"
-	DB_SOURCE = "host=localhost port=5432 user=root password=secret dbname=blog sslmode=disable"
+var (
+	dbS *sql.DB
+	err error
 )
 
 func getDatabase() *sql.DB {
-	var err error
-	dbS, err = sql.Open(DB_DRIVER, DB_SOURCE)
+	driver, source := utils.DatabaseVariable()
+	dbS, err = sql.Open(driver, source)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}

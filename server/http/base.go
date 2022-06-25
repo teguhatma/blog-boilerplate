@@ -13,6 +13,7 @@ import (
 
 	"github.com/gorilla/mux"
 	fe "github.com/teguhatma/blog-boilerplate/errors"
+	"github.com/teguhatma/blog-boilerplate/utils"
 )
 
 type serverOptions struct {
@@ -86,10 +87,11 @@ func setHeaders(headers HTTPHeaders, w http.ResponseWriter) {
 }
 
 func InitServer(router *mux.Router) (*Server, error) {
+	name, port, version := utils.ServerVariable()
 	httpConfig := &Config{
-		Name:    "test",
-		Port:    8030,
-		Version: "v1",
+		Name:    name,
+		Port:    port,
+		Version: version,
 	}
 	server, err := NewHTTPServer(httpConfig, router)
 	if err != nil {
