@@ -46,7 +46,7 @@ You need to install these packages first.
    ```
 4. Run your server
    ```bash
-   go run server/main.go
+   make server
    ```
 
 the address -> http://localhost:8030/api/v1
