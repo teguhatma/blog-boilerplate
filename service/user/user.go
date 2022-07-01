@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	fe "github.com/teguhatma/blog-boilerplate/errors"
 	"github.com/teguhatma/blog-boilerplate/repository"
@@ -44,9 +45,15 @@ func (service *service) GetUser(ctx context.Context, username string) (*response
 }
 
 func (service *service) CreateUser(ctx context.Context, request request.UserRequest) (*response.UserResponse, error) {
+	// var usr repository.User 
 	req, err := mapToRepository(request)
 	if err != nil {
 		return nil, fe.NewWithCause(fe.BAD_MESSAGE, err, "Map Request to Domain")
+	}
+
+	users, _ := service.repo.ListUsers(ctx)
+	if err := checkDuplicateUser(users, request); err != nil {
+		return nil, fe.NewWithCause(fe.DUPLICATE, err, fmt.Sprintf("cannot duplicate %s", err.Error()))
 	}
 
 	user, err := service.repo.CreateUser(ctx, *req)
@@ -75,6 +82,9 @@ func (service *service) LoginUser(ctx context.Context, req request.LoginUserRequ
 
 	symmectricKey := utils.GenerateNewID()
 	tokenMaker, err := token.NewPasetoMaker(symmectricKey)
+	if err != nil {
+		return nil, fe.NewWithCause(fe.INTERNAL_ERROR, err, "Create Token") 
+	}
 
 	// TODO 1 => use environment variable
 	accessToken, err := tokenMaker.CreateToken(user.Username, 15)
@@ -164,4 +174,17 @@ func domainToResponses(users []repository.User) []*response.UserResponse {
 	}
 
 	return response
+}
+
+func checkDuplicateUser(users []repository.User, req request.UserRequest) error {
+	for _, user := range users {
+		if user.Username == req.Username {
+			return fmt.Errorf("username")
+		}
+
+		if user.Email == req.Email {
+			return fmt.Errorf("email")	
+		}
+	}
+	return nil
 }

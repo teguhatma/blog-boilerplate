@@ -25,5 +25,5 @@ func errResponse(err error) error {
 			return NewResponseErrorWithCause(v.Code(), err, v.Message(), http.StatusInternalServerError)
 		}
 	}
-	return NewResponseErrorWithCause(fe.INTERNAL_ERROR, err, "INTERNAL SERVER ERROR", http.StatusInternalServerError)
+	return NewResponseErrorWithCause(fe.BAD_MESSAGE, err, err.Error(), http.StatusInternalServerError)
 }

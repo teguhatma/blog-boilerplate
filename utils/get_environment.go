@@ -16,7 +16,7 @@ func DatabaseVariable() (string, string) {
 	dbName := os.Getenv("DB_NAME")
 	ssl := os.Getenv("DB_SSLMODE")
 
-	return driver, fmt.Sprintf("host=%s port=%s user=%s password%s dbname=%s sslmode=%s", host, port, user, pwd, dbName, ssl)
+	return driver, fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, pwd, dbName, ssl)
 }
 
 func ServerVariable() (string, int, string) {

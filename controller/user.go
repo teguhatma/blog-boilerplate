@@ -39,11 +39,15 @@ func (c *controller) getUser(r *http.Request) (*shttp.Response, error) {
 
 func (c *controller) createUser(r *http.Request) (*shttp.Response, error) {
 	var req request.UserRequest
-
+	
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, errResponse(err)
 	}
-
+	
+	if err := structValidator(&req); err != nil {
+		return nil, errResponse(err)
+	}
+	
 	user, err := c.service.CreateUser(context.Background(), req)
 	if err != nil {
 		return nil, errResponse(err)
